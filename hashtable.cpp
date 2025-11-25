@@ -1,9 +1,7 @@
 #include <assert.h>
-#include <stdlib.h>     // calloc(), free()
+#include <stdlib.h>
 #include "hashtable.h"
 
-
-// n must be a power of 2
 static void h_init(HTab *htab, size_t n) {
     assert(n > 0 && ((n - 1) & n) == 0);
     htab->tab = (HNode **)calloc(n, sizeof(HNode *));
@@ -11,7 +9,6 @@ static void h_init(HTab *htab, size_t n) {
     htab->size = 0;
 }
 
-// hashtable insertion
 static void h_insert(HTab *htab, HNode *node) {
     size_t pos = node->hcode & htab->mask;
     HNode *next = htab->tab[pos];
@@ -20,49 +17,41 @@ static void h_insert(HTab *htab, HNode *node) {
     htab->size++;
 }
 
-// hashtable look up subroutine.
-// Pay attention to the return value. It returns the address of
-// the parent pointer that owns the target node,
-// which can be used to delete the target node.
 static HNode **h_lookup(HTab *htab, HNode *key, bool (*eq)(HNode *, HNode *)) {
     if (!htab->tab) {
         return NULL;
     }
 
     size_t pos = key->hcode & htab->mask;
-    HNode **from = &htab->tab[pos];     // incoming pointer to the target
+    HNode **from = &htab->tab[pos];
     for (HNode *cur; (cur = *from) != NULL; from = &cur->next) {
         if (cur->hcode == key->hcode && eq(cur, key)) {
-            return from;                // may be a node, may be a slot
+            return from;
         }
     }
     return NULL;
 }
 
-// remove a node from the chain
 static HNode *h_detach(HTab *htab, HNode **from) {
-    HNode *node = *from;    // the target node
-    *from = node->next;     // update the incoming pointer to the target
+    HNode *node = *from;
+    *from = node->next;
     htab->size--;
     return node;
 }
 
-const size_t k_rehashing_work = 128;    // constant work
+const size_t k_rehashing_work = 128;
 
 static void hm_help_rehashing(HMap *hmap) {
     size_t nwork = 0;
     while (nwork < k_rehashing_work && hmap->older.size > 0) {
-        // find a non-empty slot
         HNode **from = &hmap->older.tab[hmap->migrate_pos];
         if (!*from) {
             hmap->migrate_pos++;
-            continue;   // empty slot
+            continue;
         }
-        // move the first list item to the newer table
         h_insert(&hmap->newer, h_detach(&hmap->older, from));
         nwork++;
     }
-    // discard the old table if done
     if (hmap->older.size == 0 && hmap->older.tab) {
         free(hmap->older.tab);
         hmap->older = HTab{};
@@ -71,7 +60,6 @@ static void hm_help_rehashing(HMap *hmap) {
 
 static void hm_trigger_rehashing(HMap *hmap) {
     assert(hmap->older.tab == NULL);
-    // (newer, older) <- (new_table, newer)
     hmap->older = hmap->newer;
     h_init(&hmap->newer, (hmap->newer.mask + 1) * 2);
     hmap->migrate_pos = 0;

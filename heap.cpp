@@ -1,6 +1,5 @@
 #include "heap.h"
 
-
 static size_t heap_parent(size_t i) {
     return (i + 1) / 2 - 1;
 }
@@ -16,7 +15,6 @@ static size_t heap_right(size_t i) {
 static void heap_up(HeapItem *a, size_t pos) {
     HeapItem t = a[pos];
     while (pos > 0 && a[heap_parent(pos)].val > t.val) {
-        // swap with the parent
         a[pos] = a[heap_parent(pos)];
         *a[pos].ref = pos;
         pos = heap_parent(pos);
@@ -28,7 +26,6 @@ static void heap_up(HeapItem *a, size_t pos) {
 static void heap_down(HeapItem *a, size_t pos, size_t len) {
     HeapItem t = a[pos];
     while (true) {
-        // find the smallest one among the parent and their kids
         size_t l = heap_left(pos);
         size_t r = heap_right(pos);
         size_t min_pos = pos;
@@ -43,7 +40,6 @@ static void heap_down(HeapItem *a, size_t pos, size_t len) {
         if (min_pos == pos) {
             break;
         }
-        // swap with the kid
         a[pos] = a[min_pos];
         *a[pos].ref = pos;
         pos = min_pos;

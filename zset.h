@@ -3,10 +3,9 @@
 #include "avl.h"
 #include "hashtable.h"
 
-
 struct ZSet {
-    AVLNode *root = NULL;   // index by (score, name)
-    HMap hmap;              // index by name
+    AVLNode *root = NULL;
+    HMap hmap;
 };
 
 struct ZNode {
@@ -14,7 +13,7 @@ struct ZNode {
     HNode   hmap;
     double  score = 0;
     size_t  len = 0;
-    char    name[0];        // flexible array
+    char    name[0];
 };
 
 bool   zset_insert(ZSet *zset, const char *name, size_t len, double score);

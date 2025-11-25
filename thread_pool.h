@@ -5,7 +5,6 @@
 #include <vector>
 #include <deque>
 
-
 struct Work {
     void (*f)(void *) = NULL;
     void *arg = NULL;
