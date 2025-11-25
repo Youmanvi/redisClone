@@ -1,0 +1,19 @@
+FROM alpine:3.18
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+    g++ \
+    musl-dev \
+    make
+
+COPY *.h *.cpp ./
+
+RUN g++ -O2 -std=c++11 -pthread \
+    14_server.cpp \
+    avl.cpp hashtable.cpp heap.cpp zset.cpp thread_pool.cpp \
+    -o server
+
+EXPOSE 1234
+
+CMD ["./server"]
